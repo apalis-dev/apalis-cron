@@ -61,9 +61,9 @@ async fn main() {
     let schedule = schedule().each().day().build();
 
     let worker = WorkerBuilder::new("morning-cereal")
+        .backend(CronStream::new(schedule))
         .retry(RetryPolicy::retries(5))
         .data(42usize)
-        .backend(CronStream::new(schedule))
         .build(handle_tick);
 
     worker.run().await;
@@ -83,9 +83,9 @@ async fn main() {
     let schedule = EnglishRoutine::from_str("every day").unwrap();
 
     let worker = WorkerBuilder::new("morning-cereal")
+        .backend(CronStream::new(schedule))
         .retry(RetryPolicy::retries(5))
         .data(42usize)
-        .backend(CronStream::new(schedule))
         .build(handle_tick);
 
     worker.run().await;
