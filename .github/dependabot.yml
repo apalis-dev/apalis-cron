@@ -28,7 +28,7 @@ updates:
       time: "06:00"
     open-pull-requests-limit: 5
     reviewers:
-      - "mureithinjuguna"
+      - "geofmureithi"
     assignees:
       - "mureithinjuguna"
     commit-message:
