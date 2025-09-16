@@ -65,7 +65,7 @@
 //! use apalis_cron::builder::schedule;
 //!
 //! # async fn handle_tick(tick: Tick) {}
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() {
 //!     let schedule = schedule().each().day().build();
@@ -89,7 +89,7 @@
 //! use apalis_cron::english::EnglishRoutine;
 //!
 //! # async fn handle_tick(tick: Tick) {}
-//! 
+//!
 //! #[tokio::main]
 //! async fn main() {
 //!     let schedule = EnglishRoutine::from_str("every day").unwrap();
@@ -145,7 +145,7 @@
 //! # use apalis_cron::CronStream;
 //! # use apalis_core::worker::builder::WorkerBuilder;
 //! # use apalis_cron::Tick;
-//! 
+//!
 //! /// Daily routine at 8am
 //! #[derive(Clone)]
 //! struct MyDailyRoutine;
