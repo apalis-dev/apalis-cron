@@ -30,7 +30,7 @@ updates:
     reviewers:
       - "geofmureithi"
     assignees:
-      - "mureithinjuguna"
+      - "geofmureithi"
     commit-message:
       prefix: "ci"
       include: "scope"
