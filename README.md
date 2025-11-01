@@ -158,3 +158,16 @@ async fn main() {
     worker.run().await;
 }
 ```
+
+### Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our development process and how to submit pull requests.
+
+### Code of Conduct
+
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) code of conduct.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
