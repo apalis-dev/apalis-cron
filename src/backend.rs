@@ -7,7 +7,7 @@ use std::{
 };
 
 use apalis_core::{
-    backend::{Backend, TaskStream},
+    backend::{Backend, TaskStream, codec::NoopCodec},
     features_table,
     layers::Identity,
     task::{Task, builder::TaskBuilder, task_id::TaskId},
@@ -108,14 +108,16 @@ where
     }
 }
 
-impl<S: Schedule<Tz> + Unpin + Send + Sync + 'static + Clone, Tz: Unpin> Backend<Tick<Tz>>
+impl<S: Schedule<Tz> + Unpin + Send + Sync + 'static + Clone, Tz: Unpin> Backend
     for CronStream<S, Tz>
 where
     Tz: TimeZone + Send + Sync + 'static,
     Tz::Offset: Send + Sync + Unpin + Display,
 {
+    type Args = Tick<Tz>;
+    type Compact = Tick<Tz>;
     type Context = CronContext<S>;
-    type Codec = ();
+    type Codec = NoopCodec;
     type Error = CronStreamError<Tz>;
     type Stream = TaskStream<Task<Tick<Tz>, Self::Context, Ulid>, CronStreamError<Tz>>;
 
