@@ -159,20 +159,6 @@ async fn main() {
 }
 ```
 
-## Development and Contributing
-
-This project uses a comprehensive CI/CD pipeline to ensure code quality and automate releases.
-
-### CI/CD Features
-
-- **Multi-platform testing**: Linux, macOS, and Windows
-- **Multiple Rust versions**: Stable, beta, and nightly
-- **Feature matrix testing**: All feature combinations
-- **Automated publishing**: To crates.io on version tags
-- **Security scanning**: Dependency auditing and license compliance
-- **Documentation**: Automated deployment to GitHub Pages
-- **Code quality**: Formatting, linting, and coverage reporting
-
 ### Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our development process and how to submit pull requests.
@@ -184,3 +170,4 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) code of cond
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
