@@ -21,7 +21,7 @@ Thank you for your interest in contributing to apalis-cron! We welcome contribut
 ### Building the Project
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/apalis-cron.git
+git clone https://github.com/apalis-dev/apalis-cron.git
 cd apalis-cron
 cargo build
 ```

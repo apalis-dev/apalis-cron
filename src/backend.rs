@@ -7,7 +7,7 @@ use std::{
 };
 
 use apalis_core::{
-    backend::{Backend, TaskStream, codec::NoopCodec},
+    backend::{Backend, TaskStream},
     features_table,
     layers::Identity,
     task::{Task, builder::TaskBuilder, task_id::TaskId},
@@ -25,7 +25,7 @@ use crate::{context::CronContext, error::CronStreamError, schedule::Schedule, ti
 
 /// Represents a stream from a cron schedule with a timezone
 #[doc = features_table! {
-    setup = unreachable!();,
+    setup = "unreachable!();",
     TaskSink => not_supported("You cannot push tasks to a cron stream"),
 }]
 #[derive(Debug)]
@@ -115,9 +115,7 @@ where
     Tz::Offset: Send + Sync + Unpin + Display,
 {
     type Args = Tick<Tz>;
-    type Compact = Tick<Tz>;
     type Context = CronContext<S>;
-    type Codec = NoopCodec;
     type Error = CronStreamError<Tz>;
     type Stream = TaskStream<Task<Tick<Tz>, Self::Context, Ulid>, CronStreamError<Tz>>;
 

@@ -10,7 +10,7 @@ description = "A simple and extensible library for scheduling recurring tasks in
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["cron"]
+default = ["cron", "serde"]
 ## Enable support for `cron` crate
 cron = ["dep:cron"]
 docsrs = ["dep:document-features"]
@@ -20,7 +20,7 @@ serde = ["dep:serde", "chrono/serde", "apalis-core/serde"]
 english = ["dep:english-to-cron", "dep:cron"]
 
 [dependencies]
-apalis-core = { version = "1.0.0-alpha.8", default-features = false, features = [
+apalis-core = { version = "1.0.0-beta.1", default-features = false, features = [
     "sleep",
 ] }
 cron = { version = "0.15.0", optional = true }
@@ -37,9 +37,13 @@ optional = true
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.5", features = ["full"] }
-apalis-core = { version = "1.0.0-alpha.8", default-features = false, features = [
+apalis = { version = "1.0.0-beta.1" }
+apalis-core = { version = "1.0.0-beta.1", default-features = false, features = [
     "json",
 ] }
+apalis-sqlite = { version = "1.0.0-beta.1" }
+apalis-workflow = { version = "0.1.0-beta.1" }
+serde_json = "1.0"
 
 
 [package.metadata.docs.rs]

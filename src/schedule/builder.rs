@@ -26,6 +26,12 @@ pub struct ScheduleBuilder {
     time: Option<String>,
 }
 
+impl Default for ScheduleBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ScheduleBuilder {
     /// Creates a new `ScheduleBuilder`.
     pub fn new() -> Self {
@@ -39,9 +45,9 @@ impl ScheduleBuilder {
 
     fn parse_time(&self) -> Option<(u32, u32, u32)> {
         self.time.as_ref().and_then(|time_str| {
-            if time_str.starts_with(':') {
+            if let Some(stripped) = time_str.strip_prefix(':') {
                 // Format like ":17" means second 17 of current minute
-                time_str[1..].parse::<u32>().ok().map(|sec| (0, 0, sec))
+                stripped.parse::<u32>().ok().map(|sec| (0, 0, sec))
             } else {
                 // Format like "10:30" or "13:15:30"
                 let parts: Vec<&str> = time_str.split(':').collect();
@@ -84,7 +90,7 @@ impl ScheduleBuilder {
                         .unwrap_or(from_local);
 
                     if next <= from_local {
-                        next = next + Duration::minutes(1);
+                        next += Duration::minutes(1);
                     }
                     Some(next.with_timezone(&Utc))
                 } else {
@@ -103,7 +109,7 @@ impl ScheduleBuilder {
                         .unwrap_or(from_local);
 
                     if next <= from_local {
-                        next = next + Duration::hours(interval as i64);
+                        next += Duration::hours(interval as i64);
                     }
                     next
                 } else {
@@ -125,7 +131,7 @@ impl ScheduleBuilder {
                         .unwrap_or(from_local);
 
                     if next <= from_local {
-                        next = next + Duration::days(interval as i64);
+                        next += Duration::days(interval as i64);
                     }
                     next
                 } else {
@@ -157,7 +163,7 @@ impl ScheduleBuilder {
                     }
 
                     if next <= from_local {
-                        next = next + Duration::weeks(interval as i64);
+                        next += Duration::weeks(interval as i64);
                     }
 
                     Some(next.with_timezone(&Utc))
@@ -400,7 +406,7 @@ impl<Tz: chrono::TimeZone> crate::schedule::Schedule<Tz> for ScheduleIterator<Tz
         let current = self
             .current
             .take()
-            .unwrap_or(Utc::now().with_timezone(&tz))
+            .unwrap_or(Utc::now().with_timezone(tz))
             .with_timezone(&Utc);
         let next = self
             .schedule
