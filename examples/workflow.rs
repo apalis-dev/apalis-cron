@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::time::Duration;
 
-use apalis::{prelude::*};
+use apalis::prelude::*;
 use apalis_cron::{CronStream, Tick};
 use apalis_sqlite::{SqlitePool, SqliteStorage, fetcher::SqliteFetcher};
 use apalis_workflow::*;
