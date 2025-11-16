@@ -23,12 +23,11 @@ This means you can leverage the full power of workers and middleware, including:
 
 ### Using `cron` crate
 
-```rust
-use apalis::{prelude::*, layers::retry::RetryPolicy};
-use std::str::FromStr;
-use apalis_cron::{CronStream};
-use chrono::{DateTime, Utc};
+```rust,no_run
+use apalis::{layers::retry::RetryPolicy, prelude::*};
+use apalis_cron::{CronStream, Tick};
 use cron::Schedule;
+use std::str::FromStr;
 
 async fn handle_tick(tick: Tick, data: Data<usize>) {
     // Do something with the current tick
@@ -44,39 +43,49 @@ async fn main() {
         .data(42usize)
         .build(handle_tick);
 
-    worker.run().await;
+    worker.run().await.unwrap();
 }
 ```
 
 ### Using the builder pattern
 
-```rust
-use apalis::{prelude::*, layers::retry::RetryPolicy};
-use std::str::FromStr;
-use apalis_cron::{CronStream, schedule};
-use chrono::{DateTime, Utc};
+```rust,no_run
+use apalis::{layers::retry::RetryPolicy, prelude::*};
+use apalis_cron::{CronStream, Tick, builder::schedule};
+use chrono::Local;
+
+async fn handle_tick(tick: Tick<Local>, data: Data<usize>) -> Result<(), BoxDynError> {
+    println!("Handling tick: {:?} with data: {:?}", tick, data);
+    Ok(())
+}
 
 #[tokio::main]
-async fn main() {
-    let schedule = schedule().each().day().build();
-
+async fn main() -> Result<(), BoxDynError> {
+    let schedule = schedule().each().day().at("9:30").build();
+    let backend = CronStream::new_with_timezone(schedule, Local);
     let worker = WorkerBuilder::new("morning-cereal")
-        .backend(CronStream::new(schedule))
+        .backend(backend)
         .retry(RetryPolicy::retries(5))
         .data(42usize)
         .build(handle_tick);
 
-    worker.run().await;
+    worker.run().await?;
+    Ok(())
 }
 ```
 
 ### Using the `english-to-cron` crate
 
-```rust
-use apalis::{prelude::*, layers::retry::RetryPolicy};
-use std::str::FromStr;
-use apalis_cron::{CronStream};
+```rust,no_run
+use apalis::{layers::retry::RetryPolicy, prelude::*};
 use apalis_cron::english::EnglishRoutine;
+use apalis_cron::{CronStream, Tick};
+use std::str::FromStr;
+
+async fn handle_tick(tick: Tick, data: Data<usize>) -> Result<(), BoxDynError> {
+    println!("Handling tick: {:?} with data: {:?}", tick, data);
+    Ok(())
+}
 
 #[tokio::main]
 async fn main() {
@@ -88,7 +97,7 @@ async fn main() {
         .data(42usize)
         .build(handle_tick);
 
-    worker.run().await;
+    worker.run().await.unwrap();
 }
 ```
 
@@ -100,26 +109,37 @@ Sometimes we may want to persist cron jobs for several reasons:
 - Store the results of the cronjob
 - Prevent task skipping in the case of a restart
 
-```rust
+```rust,no_run
+use apalis::{layers::retry::RetryPolicy, prelude::*};
+use apalis_cron::{CronStream, Tick};
+use apalis_sqlite::{SqlitePool, SqliteStorage};
+use cron::Schedule;
+use std::str::FromStr;
+
+async fn handle_tick(tick: Tick, data: Data<usize>) {
+    // Do something with the current tick
+}
+
 #[tokio::main]
 async fn main() {
     let schedule = Schedule::from_str("@daily").unwrap();
-    let cron_stream = CronStream::new(schedule);
 
-    // Lets create a storage for our cron jobs
     let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
     SqliteStorage::setup(&pool)
         .await
         .expect("unable to run migrations for sqlite");
-    let sqlite = SqliteStorage::new(pool);
+    let sqlite = SqliteStorage::new(&pool);
 
-    let backend = cron_stream.pipe_to(sqlite);
+    let cron = CronStream::new(schedule);
+    let backend = cron.pipe_to(sqlite);
 
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(backend)
+        .retry(RetryPolicy::retries(5))
+        .data(42usize)
         .build(handle_tick);
 
-    worker.run().await;
+    worker.run().await.unwrap();
 }
 ```
 
@@ -127,12 +147,17 @@ async fn main() {
 
 You can customize the way ticks are provided by implementing your own `Schedule`;
 
-```rust
+```rust,no_run
+use apalis::prelude::*;
+use apalis_cron::{CronStream, Schedule, Tick};
+use chrono::{DateTime, Duration, Local, NaiveTime};
+
 /// Daily routine at 8am
+#[derive(Debug, Clone)]
 struct MyDailyRoutine;
 
 impl Schedule<Local> for MyDailyRoutine {
-    fn next_tick(&self, timezone: &Local) -> Option<DateTime<Local>> {
+    fn next_tick(&mut self, _: &Local) -> Option<DateTime<Local>> {
         let now = Local::now();
         // Add 1 day to get tomorrow
         let tomorrow = now.date_naive() + Duration::days(1);
@@ -141,21 +166,28 @@ impl Schedule<Local> for MyDailyRoutine {
         let eight_am = NaiveTime::from_hms_opt(8, 0, 0).unwrap();
 
         // Combine tomorrow's date with 8:00 AM in local time zone
-        let tomorrow_eight_am = tomorrow.and_time(eight_am).and_local_timezone(Local).unwrap();
-
+        let tomorrow_eight_am = tomorrow
+            .and_time(eight_am)
+            .and_local_timezone(Local)
+            .unwrap();
 
         Some(tomorrow_eight_am)
     }
 }
 
+async fn handle_tick(tick: Tick<Local>, data: Data<usize>) -> Result<(), BoxDynError> {
+    println!("Handling tick: {:?} with data: {:?}", tick, data);
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
-    let cron_stream = CronStream::new(MyDailyRoutine);
+    let cron_stream = CronStream::new_with_timezone(MyDailyRoutine, Local);
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(cron_stream)
         .build(handle_tick);
 
-    worker.run().await;
+    worker.run().await.unwrap();
 }
 ```
 
@@ -170,4 +202,3 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) code of cond
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
