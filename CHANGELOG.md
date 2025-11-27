@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Added cargo audit and vet
+
 ## [1.0.0-beta.2] - 2025-11-16
 
 ### Added
