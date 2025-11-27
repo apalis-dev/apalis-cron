@@ -1,136 +1,25 @@
-# This template contains all of the possible sections and their default values
-
-# Note that all fields that take a lint level have these possible values:
-# * deny - An error will be produced and the check will fail
-# * warn - A warning will be produced, but the check will not fail
-# * allow - No warning or error will be produced, though in some cases a note
-# will be
-
-# The values provided in this template are the default values that will be used
-# when any section or field is not specified in your own configuration
-
-# Root options
-
-[graph]
-# If 1 or more target triples (and optionally, target_features) are specified,
-# only the specified targets will be checked when running `cargo deny check`.
-# This means, if a particular package is only ever used as a target specific
-# dependency, such as, for example, `winapi` or `nix`, a problem with that
-# package will not cause `cargo deny check` to fail unless the target(s)
-# it targets are also included in the target array.
-targets = [
-    # The triple can be any string, but only the target triples built in to
-    # rustc (as of 1.40) can be checked against actual config, so it is
-    # recommended to always use valid triples
-    "x86_64-unknown-linux-gnu",
-    "x86_64-pc-windows-msvc",
-    "x86_64-apple-darwin",
-]
-
 [advisories]
-# The path where the advisory database is cloned/fetched into
-db-path = "~/.cargo/advisory-db"
-# The url(s) of the advisory databases to use
-db-urls = ["https://github.com/rustsec/advisory-db"]
-# The lint level for security vulnerabilities
-vulnerability = "deny"
-# The lint level for unmaintained crates
-unmaintained = "warn"
-# The lint level for crates that have been yanked from their source registry
-yanked = "warn"
-# The lint level for crates with security notices. Note that as of
-# 2019-12-17 there are no security notice advisories in
-# https://github.com/rustsec/advisory-db
-notice = "warn"
-# A list of advisory IDs to ignore. Note that ignored advisories will still
-# output a note when they are encountered.
-ignore = [
-    #"RUSTSEC-0000-0000",
-]
+db-path = "~/.cargo/advisory-dbs"
+db-urls = ["https://github.com/RustSec/advisory-db"]
+unmaintained = "all"
 
 [licenses]
-# The lint level for crates which do not have a detectable license
-unlicensed = "deny"
-# List of explicitly allowed licenses
-# See https://spdx.org/licenses/ for list of possible licenses
-# [possible values: any SPDX 3.11 short identifier (+ optional exception)].
 allow = [
     "MIT",
     "Apache-2.0",
-    "Apache-2.0 WITH LLVM-exception",
-    "BSD-2-Clause",
-    "BSD-3-Clause",
-    "ISC",
-    "Unicode-DFS-2016",
+    "Unicode-3.0",
 ]
-# List of explicitly disallowed licenses
-# See https://spdx.org/licenses/ for list of possible licenses
-# [possible values: any SPDX 3.11 short identifier (+ optional exception)].
-deny = [
-    "GPL-2.0",
-    "GPL-3.0",
-    "AGPL-1.0",
-    "AGPL-3.0",
-    "LGPL-2.0",
-    "LGPL-2.1",
-    "LGPL-3.0",
-]
-# Lint level for when multiple versions of the same license are detected
-copyleft = "warn"
-# Confidence threshold for detecting a license from a license text.
-# [possible values: any between 0.0 and 1.0].
 confidence-threshold = 0.8
-# Allow 1 or more licenses on a per-crate basis, so that particular licenses
-# aren't accepted for every possible crate as with the normal allow list
-exceptions = [
-    # Each entry is the crate and version constraint, and its the license
-    #{ allow = ["Zlib"], name = "adler32", version = "*" },
-]
 
 [bans]
-# Lint level for when multiple versions of the same crate are detected
 multiple-versions = "warn"
-# Lint level for when a crate version requirement is `*`
 wildcards = "allow"
-# The graph highlighting used when creating dotgraphs for crates
-# with multiple versions
-# * all - all edges are highlighted
-# * first-in-graph - only the first occurrence of a dependency is highlighted
-# * duplicates - only duplicates are highlighted
 highlight = "all"
-# List of crates that are allowed. Use with care!
-allow = [
-    #{ name = "ansi_term", version = "=0.11.0" },
-]
-# List of crates to deny
-deny = [
-    # Each entry the name of a crate and a version range. If version is
-    # not specified, all versions will be matched.
-    #{ name = "ansi_term", version = "=0.11.0" },
-    #
-    # Wrapper crates can optionally be specified to allow the crate when it
-    # is a direct dependency of the otherwise banned crate
-    #{ name = "ansi_term", version = "=0.11.0", wrappers = [] },
-]
-# Certain crates/versions that will be skipped when doing duplicate detection.
-skip = [
-    #{ name = "ansi_term", version = "=0.11.0" },
-]
-# Similarly to `skip` allows you to skip certain crates from being checked. Unlike `skip`,
-# `skip-tree` skips the crate and all of its dependencies.
-skip-tree = [
-    #{ name = "ansi_term", version = "=0.11.0" },
-]
+workspace-default-features = "allow"
+external-default-features = "allow"
 
 [sources]
-# Lint level for what to happen when a crate from a crate registry that is
-# not in the allow list is encountered
 unknown-registry = "warn"
-# Lint level for what to happen when a crate from a git repository that is not
-# in the allow list is encountered
 unknown-git = "warn"
-# List of URLs for allowed crate registries. Defaults to the crates.io index
-# if not specified. If it is specified but empty, no registries are allowed.
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-# List of URLs for allowed Git repositories
 allow-git = []

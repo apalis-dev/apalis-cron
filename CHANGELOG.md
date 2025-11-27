@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [1.0.0-beta.1] - 2025-11-16
+## [1.0.0-beta.2] - 2025-11-16
 
 ### Added
 - Initial release of apalis-cron
@@ -40,5 +40,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Persistence support for distributed cron jobs
 - Extensible middleware support
 
-[Unreleased]: https://github.com/apalis-dev/apalis-cron/compare/v1.0.0-beta.1...HEAD
-[1.0.0-alpha.1]: https://github.com/apalis-dev/apalis-cron/releases/tag/v1.0.0-beta.1
+[Unreleased]: https://github.com/apalis-dev/apalis-cron/compare/v1.0.0-beta.2...HEAD
+[1.0.0-alpha.1]: https://github.com/apalis-dev/apalis-cron/releases/tag/v1.0.0-beta.2

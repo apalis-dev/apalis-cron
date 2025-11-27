@@ -5,7 +5,8 @@ use cron::Schedule;
 use std::str::FromStr;
 
 async fn handle_tick(tick: Tick, data: Data<usize>) {
-    // Do something with the current tick
+    assert!(*data == 42usize);
+    println!("Tick received at {}", tick.get_timestamp());
 }
 
 #[tokio::main]
