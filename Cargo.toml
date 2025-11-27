@@ -6,6 +6,7 @@ repository = "https://github.com/apalis-dev/apalis-cron"
 authors = ["Njuguna Mureithi <mureithinjuguna@gmail.com>"]
 license = "MIT"
 description = "A simple and extensible library for scheduling recurring tasks in rust."
+rust-version = "1.85.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
