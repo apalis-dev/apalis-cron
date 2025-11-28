@@ -28,28 +28,27 @@ jobs:
       - name: Run cargo deny
         run: cargo deny check
 
-  supply-chain:
-    name: Supply Chain Security
+  cargo-vet:
+    name: cargo-vet
     runs-on: ubuntu-latest
+    env:
+      CARGO_VET_VERSION: 0.10.1
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install cargo-audit
-        uses: taiki-e/install-action@cargo-audit
-
-      - name: Audit dependencies
-        run: cargo audit
-
-      - name: Install cargo-outdated
-        uses: taiki-e/install-action@cargo-outdated
-
-      - name: Check for outdated dependencies
-        run: cargo outdated --exit-code 1
-        continue-on-error: true
+    - uses: actions/checkout@master
+    - name: Install Rust
+      run: rustup update stable && rustup default stable
+    - uses: actions/cache@v4
+      with:
+        path: ${{ runner.tool_cache }}/cargo-vet
+        key: cargo-vet-bin-${{ env.CARGO_VET_VERSION }}
+    - name: Add the tool cache directory to the search path
+      run: echo "${{ runner.tool_cache }}/cargo-vet/bin" >> $GITHUB_PATH
+    - name: Ensure that the tool cache is populated with the cargo-vet binary
+      run: cargo install --root ${{ runner.tool_cache }}/cargo-vet --version ${{ env.CARGO_VET_VERSION }} cargo-vet
+    - name: Generate Lockfile
+      run: cargo generate-lockfile
+    - name: Invoke cargo-vet
+      run: cargo vet --locked
 
   unused-deps:
     name: Unused Dependencies
