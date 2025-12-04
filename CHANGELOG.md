@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Add dependabot changelog
-- Streamline workflows
+- *chore*: streamline workflows (#22)
+- *ci(deps)*: bump actions/upload-artifact from 4 to 5 (#23)
 
 ### Added
 - CI/CD pipelines with GitHub Actions
