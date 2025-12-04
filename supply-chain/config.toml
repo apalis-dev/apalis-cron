@@ -361,7 +361,7 @@ version = "0.4.14"
 criteria = "safe-to-run"
 
 [[exemptions.log]]
-version = "0.4.28"
+version = "0.4.29"
 criteria = "safe-to-deploy"
 
 [[exemptions.md-5]]
@@ -373,7 +373,7 @@ version = "2.7.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.mio]]
-version = "1.1.0"
+version = "1.1.1"
 criteria = "safe-to-run"
 
 [[exemptions.num-bigint-dig]]
