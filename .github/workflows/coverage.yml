@@ -1,5 +1,8 @@
 name: Coverage
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -41,3 +44,4 @@ jobs:
         with:
           file: cobertura.xml
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
