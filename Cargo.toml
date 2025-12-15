@@ -42,7 +42,7 @@ apalis = { version = "1.0.0-beta.2" }
 apalis-core = { version = "1.0.0-beta.2", default-features = false, features = [
     "json",
 ] }
-apalis-sqlite = { version = "1.0.0-beta.2" }
+apalis-sqlite = { version = "1.0.0-beta.4" }
 apalis-workflow = { version = "0.1.0-beta.1" }
 serde_json = "1.0"
 
