@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- *chore*: streamline workflows (#22)
-- *ci(deps)*: bump actions/upload-artifact from 4 to 5 (#23)
+## [1.0.0-rc.1] - 2025-12-25
+
+- _bump_: to v1.0.0-rc.1 (#62)
+- _chore_: streamline workflows (#22)
+- _ci(deps)_: bump actions/upload-artifact from 4 to 5 (#23)
 
 ### Added
+
 - CI/CD pipelines with GitHub Actions
 - Automated publishing to crates.io
 - Documentation deployment to GitHub Pages
@@ -36,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-beta.2] - 2025-11-16
 
 ### Added
+
 - Initial release of apalis-cron
 - Cron-based scheduling with standard cron expressions
 - Timezone support for job scheduling

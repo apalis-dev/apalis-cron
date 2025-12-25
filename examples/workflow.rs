@@ -1,9 +1,9 @@
 use std::str::FromStr;
 use std::time::Duration;
 
-use apalis::prelude::*;
+use apalis::{layers::retry::RetryPolicy, prelude::*};
 use apalis_cron::{CronStream, Tick};
-use apalis_sqlite::{SqlitePool, SqliteStorage, fetcher::SqliteFetcher};
+use apalis_sqlite::{SqlitePool, SqliteStorage};
 use apalis_workflow::*;
 use cron::Schedule;
 use futures_util::{SinkExt, stream::TryStreamExt};
@@ -16,8 +16,7 @@ async fn main() -> Result<(), BoxDynError> {
     SqliteStorage::setup(&pool)
         .await
         .expect("unable to run migrations for sqlite");
-    let sqlite: SqliteStorage<Vec<u8>, json::JsonCodec<Vec<u8>>, SqliteFetcher> =
-        SqliteStorage::new(&pool);
+    let sqlite = SqliteStorage::new(&pool);
 
     let mut cron = CronStream::new(schedule)
         .map_ok(|r| TaskBuilder::new(serde_json::to_vec(&r).unwrap()).build())
@@ -44,7 +43,7 @@ async fn main() -> Result<(), BoxDynError> {
 
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(sqlite)
-        // .retry(RetryPolicy::retries(5)) // Workflow currently does not support retries yet coz its not clonable
+        .retry(RetryPolicy::retries(5))
         .data(42usize)
         .build(workflow);
 

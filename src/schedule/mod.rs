@@ -21,7 +21,7 @@ mod tests {
     use apalis_core::{
         backend::memory::MemoryStorage,
         error::BoxDynError,
-        task::{builder::TaskBuilder, task_id::TaskId},
+        task::{builder::TaskBuilder, task_id::RandomId, task_id::TaskId},
         worker::{builder::WorkerBuilder, event::Event, ext::event_listener::EventListenerExt},
     };
     use cron::Schedule;
@@ -45,7 +45,7 @@ mod tests {
 
         memory.send_all(&mut tasks).await.unwrap();
 
-        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
+        async fn send_reminder(job: Tick, id: TaskId<RandomId>) -> Result<(), BoxDynError> {
             println!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())
