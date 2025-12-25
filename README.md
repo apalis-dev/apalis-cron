@@ -191,11 +191,17 @@ async fn main() {
 }
 ```
 
-### Contributing
+
+## Observability
+
+You can track your jobs using [apalis-board](https://github.com/apalis-dev/apalis-board).
+![Task](https://github.com/apalis-dev/apalis-board/raw/main/screenshots/task.png)
+
+## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our development process and how to submit pull requests.
 
-### Code of Conduct
+## Code of Conduct
 
 This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md) code of conduct.
 
