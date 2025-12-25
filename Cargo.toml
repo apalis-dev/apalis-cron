@@ -43,6 +43,8 @@ apalis-sqlite = { version = "1.0.0-rc.1" }
 apalis-workflow = { version = "0.1.0-rc.1" }
 apalis-codec = { version = "0.1.0-rc.1" }
 serde_json = "1.0"
+apalis-cron = { path = ".", features = ["cron", "serde", "english"] }
+apalis-file-storage = { version = "0.1.0-rc.1" }
 
 
 [package.metadata.docs.rs]

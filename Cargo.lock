@@ -68,6 +68,8 @@ dependencies = [
  "apalis",
  "apalis-codec",
  "apalis-core",
+ "apalis-cron",
+ "apalis-file-storage",
  "apalis-sqlite",
  "apalis-workflow",
  "chrono",
@@ -80,6 +82,22 @@ dependencies = [
  "tokio",
  "tower",
  "ulid",
+]
+
+[[package]]
+name = "apalis-file-storage"
+version = "0.1.0-rc.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "522eed1bc98a18b78c5ea31024d997286a12482260e6155735255a2c0427948d"
+dependencies = [
+ "apalis-codec",
+ "apalis-core",
+ "futures-channel",
+ "futures-core",
+ "futures-sink",
+ "futures-util",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

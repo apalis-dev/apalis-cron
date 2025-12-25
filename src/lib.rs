@@ -126,17 +126,15 @@ mod tests {
     #[cfg(feature = "serde")]
     #[tokio::test]
     async fn piped_worker() {
-        use apalis_core::{
-            backend::{json::JsonStorage, pipe::PipeExt},
-            task::task_id::TaskId,
-        };
+        use apalis_core::{backend::pipe::PipeExt, task::task_id::RandomId, task::task_id::TaskId};
+        use apalis_file_storage::JsonStorage;
         let schedule = Schedule::from_str("1/1 * * * * *").unwrap();
         let stream = CronStream::new(schedule);
         let in_memory = JsonStorage::new_temp().unwrap();
 
         let backend = stream.pipe_to(in_memory);
 
-        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
+        async fn send_reminder(job: Tick, id: TaskId<RandomId>) -> Result<(), BoxDynError> {
             println!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())
