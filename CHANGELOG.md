@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] - 2026-02-02
+
+- _bump_: to v1.0.0-rc.3 (#36)
+
 ## [1.0.0-rc.2] - 2026-01-10
 
 - _deps(deps)_: bump serde_json from 1.0.147 to 1.0.148 (#28)
