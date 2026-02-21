@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "apalis-cron"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 dependencies = [
  "apalis",
  "apalis-codec",
@@ -115,9 +115,9 @@ dependencies = [
 
 [[package]]
 name = "apalis-sqlite"
-version = "1.0.0-rc.3"
+version = "1.0.0-rc.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9efb1428e9c9cb6fa8bc7939c2683042837f87474a2c527f4275e32a62a9f2a9"
+checksum = "2a16a88f8105f05035a83ea2ae15901978e55dadcaa7c0589b219ed4accbe961"
 dependencies = [
  "apalis-codec",
  "apalis-core",
