@@ -29,7 +29,8 @@ async fn main() -> Result<(), BoxDynError> {
     });
 
     let workflow = Workflow::new("daily-tasks")
-        .and_then(|tick: Tick, _data: Data<usize>| async move {
+        .and_then(|tick: Tick, _pool: Data<SqlitePool>| async move {
+            // _pool.begin()
             println!("Starting workflow with for tick: {:?}", tick);
             // First task
             Ok::<_, BoxDynError>(format!("Hello from tick at {}", tick.get_timestamp()))
@@ -44,7 +45,7 @@ async fn main() -> Result<(), BoxDynError> {
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(sqlite)
         .retry(RetryPolicy::retries(5))
-        .data(42usize)
+        .data(pool)
         .build(workflow);
 
     worker.run().await?;
