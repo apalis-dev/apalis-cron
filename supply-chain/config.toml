@@ -13,31 +13,31 @@ version = "0.1.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.apalis]]
-version = "1.0.0-rc.5"
+version = "1.0.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-codec]]
-version = "0.1.0-rc.5"
+version = "0.1.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-core]]
-version = "1.0.0-rc.5"
+version = "1.0.0-rc.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.apalis-file-storage]]
-version = "0.1.0-rc.5"
+version = "0.1.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-sql]]
-version = "1.0.0-rc.5"
+version = "1.0.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-sqlite]]
-version = "1.0.0-rc.4"
+version = "1.0.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-workflow]]
-version = "0.1.0-rc.5"
+version = "0.1.0-rc.6"
 criteria = "safe-to-run"
 
 [[exemptions.atoi]]
@@ -405,7 +405,7 @@ version = "0.2.19"
 criteria = "safe-to-deploy"
 
 [[exemptions.once_cell]]
-version = "1.21.3"
+version = "1.21.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.parking]]
