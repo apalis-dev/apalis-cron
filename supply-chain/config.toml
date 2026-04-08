@@ -33,7 +33,7 @@ version = "1.0.0-rc.7"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-sqlite]]
-version = "1.0.0-rc.6"
+version = "1.0.0-rc.7"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-workflow]]
@@ -709,7 +709,7 @@ version = "0.1.1"
 criteria = "safe-to-run"
 
 [[exemptions.tokio]]
-version = "1.51.0"
+version = "1.51.1"
 criteria = "safe-to-run"
 
 [[exemptions.tokio-macros]]
