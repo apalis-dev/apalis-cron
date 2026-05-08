@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.8] - 2026-05-08
+
+- _bump_: to v1.0.0-rc.8 (#51)
+
 ## [1.0.0-rc.7] - 2026-04-08
 
 - _deps(deps)_: bump cron from 0.15.0 to 0.16.0 (#46)

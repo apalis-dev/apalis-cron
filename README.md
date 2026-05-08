@@ -1,5 +1,10 @@
 # apalis-cron
 
+[![Crates.io](https://img.shields.io/crates/v/apalis-cron.svg)](https://crates.io/crates/apalis-cron)
+[![Docs.rs](https://docs.rs/apalis-cron/badge.svg)](https://docs.rs/apalis-cron)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-blue.svg)](#license)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/apalis-dev/apalis-cron/ci.yml?branch=main)](https://github.com/apalis-dev/apalis-cron/actions)
+
 `apalis-cron` is a flexible and extensible Rust library for scheduling and running cron jobs within the `apalis` ecosystem. It enables developers to define jobs using cron expressions, natural language routines, or custom schedules, and provides robust features for persistence, retries, concurrency, and observability.
 
 ## Features
@@ -191,11 +196,12 @@ async fn main() {
 }
 ```
 
-
 ## Observability
 
 You can track your jobs using [apalis-board](https://github.com/apalis-dev/apalis-board).
 ![Task](https://github.com/apalis-dev/apalis-board/raw/main/screenshots/task.png)
+
+> [Background task processing for Rust](https://apalis.dev/), powered by `apalis`
 
 ## Contributing
 
