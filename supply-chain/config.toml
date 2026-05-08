@@ -13,31 +13,31 @@ version = "0.1.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.apalis]]
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.9"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-codec]]
-version = "0.1.0-rc.7"
+version = "0.1.0-rc.9"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-core]]
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.9"
 criteria = "safe-to-deploy"
 
 [[exemptions.apalis-file-storage]]
-version = "0.1.0-rc.7"
+version = "0.1.0-rc.9"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-sql]]
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.9"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-sqlite]]
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 criteria = "safe-to-run"
 
 [[exemptions.apalis-workflow]]
-version = "0.1.0-rc.7"
+version = "0.1.0-rc.9"
 criteria = "safe-to-run"
 
 [[exemptions.atoi]]
@@ -57,7 +57,7 @@ version = "1.8.3"
 criteria = "safe-to-run"
 
 [[exemptions.bitflags]]
-version = "2.11.0"
+version = "2.11.1"
 criteria = "safe-to-run"
 
 [[exemptions.block-buffer]]
@@ -77,7 +77,7 @@ version = "1.11.1"
 criteria = "safe-to-run"
 
 [[exemptions.cc]]
-version = "1.2.59"
+version = "1.2.61"
 criteria = "safe-to-deploy"
 
 [[exemptions.cfg-if]]
@@ -109,7 +109,7 @@ version = "3.4.0"
 criteria = "safe-to-run"
 
 [[exemptions.crc-catalog]]
-version = "2.4.0"
+version = "2.5.0"
 criteria = "safe-to-run"
 
 [[exemptions.cron]]
@@ -253,7 +253,7 @@ version = "0.15.5"
 criteria = "safe-to-run"
 
 [[exemptions.hashbrown]]
-version = "0.16.1"
+version = "0.17.0"
 criteria = "safe-to-run"
 
 [[exemptions.hashlink]]
@@ -329,7 +329,7 @@ version = "1.2.1"
 criteria = "safe-to-run"
 
 [[exemptions.indexmap]]
-version = "2.13.1"
+version = "2.14.0"
 criteria = "safe-to-run"
 
 [[exemptions.itoa]]
@@ -337,7 +337,7 @@ version = "1.0.18"
 criteria = "safe-to-run"
 
 [[exemptions.js-sys]]
-version = "0.3.94"
+version = "0.3.98"
 criteria = "safe-to-deploy"
 
 [[exemptions.lazy_static]]
@@ -345,7 +345,7 @@ version = "1.5.0"
 criteria = "safe-to-run"
 
 [[exemptions.libc]]
-version = "0.2.184"
+version = "0.2.186"
 criteria = "safe-to-deploy"
 
 [[exemptions.libm]]
@@ -353,7 +353,7 @@ version = "0.2.16"
 criteria = "safe-to-deploy"
 
 [[exemptions.libredox]]
-version = "0.1.15"
+version = "0.1.16"
 criteria = "safe-to-run"
 
 [[exemptions.libsqlite3-sys]]
@@ -449,11 +449,11 @@ version = "0.11.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.pin-project]]
-version = "1.1.11"
+version = "1.1.12"
 criteria = "safe-to-deploy"
 
 [[exemptions.pin-project-internal]]
-version = "1.1.11"
+version = "1.1.12"
 criteria = "safe-to-deploy"
 
 [[exemptions.pin-project-lite]]
@@ -469,7 +469,7 @@ version = "0.10.2"
 criteria = "safe-to-run"
 
 [[exemptions.pkg-config]]
-version = "0.3.32"
+version = "0.3.33"
 criteria = "safe-to-run"
 
 [[exemptions.plain]]
@@ -497,11 +497,11 @@ version = "5.3.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand]]
-version = "0.8.5"
+version = "0.8.6"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand]]
-version = "0.9.2"
+version = "0.9.4"
 criteria = "safe-to-deploy"
 
 [[exemptions.rand_chacha]]
@@ -525,7 +525,7 @@ version = "0.5.18"
 criteria = "safe-to-run"
 
 [[exemptions.redox_syscall]]
-version = "0.7.3"
+version = "0.7.5"
 criteria = "safe-to-run"
 
 [[exemptions.regex]]
@@ -549,15 +549,15 @@ version = "0.9.10"
 criteria = "safe-to-run"
 
 [[exemptions.rustls]]
-version = "0.23.37"
+version = "0.23.40"
 criteria = "safe-to-run"
 
 [[exemptions.rustls-pki-types]]
-version = "1.14.0"
+version = "1.14.1"
 criteria = "safe-to-run"
 
 [[exemptions.rustls-webpki]]
-version = "0.103.10"
+version = "0.103.13"
 criteria = "safe-to-run"
 
 [[exemptions.rustversion]]
@@ -613,7 +613,7 @@ version = "2.2.0"
 criteria = "safe-to-run"
 
 [[exemptions.siphasher]]
-version = "1.0.2"
+version = "1.0.3"
 criteria = "safe-to-deploy"
 
 [[exemptions.slab]]
@@ -709,7 +709,7 @@ version = "0.1.1"
 criteria = "safe-to-run"
 
 [[exemptions.tokio]]
-version = "1.51.1"
+version = "1.52.2"
 criteria = "safe-to-run"
 
 [[exemptions.tokio-macros]]
@@ -749,7 +749,7 @@ version = "0.1.36"
 criteria = "safe-to-deploy"
 
 [[exemptions.typenum]]
-version = "1.19.0"
+version = "1.20.0"
 criteria = "safe-to-run"
 
 [[exemptions.ulid]]
@@ -805,19 +805,19 @@ version = "0.1.0"
 criteria = "safe-to-run"
 
 [[exemptions.wasm-bindgen]]
-version = "0.2.117"
+version = "0.2.121"
 criteria = "safe-to-deploy"
 
 [[exemptions.wasm-bindgen-macro]]
-version = "0.2.117"
+version = "0.2.121"
 criteria = "safe-to-deploy"
 
 [[exemptions.wasm-bindgen-macro-support]]
-version = "0.2.117"
+version = "0.2.121"
 criteria = "safe-to-deploy"
 
 [[exemptions.wasm-bindgen-shared]]
-version = "0.2.117"
+version = "0.2.121"
 criteria = "safe-to-deploy"
 
 [[exemptions.web-time]]
@@ -829,7 +829,7 @@ version = "0.26.11"
 criteria = "safe-to-run"
 
 [[exemptions.webpki-roots]]
-version = "1.0.6"
+version = "1.0.7"
 criteria = "safe-to-run"
 
 [[exemptions.whoami]]
