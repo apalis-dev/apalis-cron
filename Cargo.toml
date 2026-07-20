@@ -28,7 +28,7 @@ cron = { version = "0.16.0", optional = true }
 futures-util = { version = "0.3.30", default-features = false }
 chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
 serde = { version = "1.0", features = ["derive"], optional = true }
-ulid = { version = "1" }
+ulid = { version = "3" }
 english-to-cron = { version = "0.1.6", optional = true }
 
 [dependencies.document-features]
