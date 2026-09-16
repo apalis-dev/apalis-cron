@@ -1,10 +1,8 @@
 use std::{borrow::Cow, str::FromStr};
 
-use chrono::DateTime;
-
 use english_to_cron::Cron;
 
-use crate::schedule::Schedule;
+use crate::{Tick, schedule::Schedule};
 
 /// Represents an English routine for scheduling tasks.
 #[derive(Debug, Clone)]
@@ -97,8 +95,12 @@ impl From<cron::error::Error> for EnglishRoutineError {
 }
 
 impl<Tz: chrono::TimeZone> Schedule<Tz> for EnglishRoutine {
-    fn next_tick(&mut self, timezone: &Tz) -> Option<DateTime<Tz>> {
-        self.schedule.upcoming(timezone.clone()).next()
+    fn next_tick(&mut self, timezone: &Tz) -> Option<Tick<Tz>> {
+        self.schedule
+            .upcoming(timezone.clone())
+            .next()
+            .map(|s| s.timestamp() as _)
+            .map(Tick::new)
     }
 }
 
@@ -109,9 +111,8 @@ mod tests {
         task::task_id::TaskId,
         worker::{builder::WorkerBuilder, event::Event, ext::event_listener::EventListenerExt},
     };
-    use ulid::Ulid;
 
-    use crate::{backend::CronStream, tick::Tick};
+    use crate::{backend::CronScheduler, tick::Tick};
 
     use super::*;
 
@@ -119,10 +120,10 @@ mod tests {
 
     #[tokio::test]
     async fn basic_worker() {
-        let schedule = EnglishRoutine::from_str("every 9 seconds").unwrap();
-        let backend = CronStream::new(schedule);
+        let schedule = EnglishRoutine::from_str("every second").unwrap();
+        let backend = CronScheduler::new(schedule);
 
-        async fn send_reminder(job: Tick, id: TaskId<Ulid>) -> Result<(), BoxDynError> {
+        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
             println!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())

@@ -1,10 +1,12 @@
+use jiff_cron::jiff::tz::TimeZone;
+
 use crate::{Tick, schedule::Schedule};
 
-impl<Tz: chrono::TimeZone> Schedule<Tz> for cron::Schedule {
-    fn next_tick(&mut self, timezone: &Tz) -> Option<Tick<Tz>> {
+impl Schedule<TimeZone> for jiff_cron::Schedule {
+    fn next_tick(&mut self, timezone: &TimeZone) -> Option<Tick<TimeZone>> {
         self.upcoming(timezone.clone())
             .next()
-            .map(|d| d.timestamp() as _)
+            .map(|d| d.timestamp().as_second() as _)
             .map(Tick::new)
     }
 }
@@ -12,11 +14,16 @@ impl<Tz: chrono::TimeZone> Schedule<Tz> for cron::Schedule {
 #[cfg(test)]
 mod tests {
     use apalis_core::{
+        backend::ext::BackendExt,
         error::BoxDynError,
         task::task_id::TaskId,
         worker::{builder::WorkerBuilder, event::Event, ext::event_listener::EventListenerExt},
     };
-    use cron::Schedule;
+    use jiff_cron::{
+        Schedule,
+        jiff::tz::{Offset, TimeZone},
+    };
+    use tracing::info;
 
     use crate::{backend::CronScheduler, tick::Tick};
 
@@ -25,10 +32,13 @@ mod tests {
     #[tokio::test]
     async fn basic_worker() {
         let schedule = Schedule::from_str("1/1 * * * * *").unwrap();
-        let backend = CronScheduler::new(schedule);
+        let span = tracing::info_span!("cron");
+        let backend = CronScheduler::new(schedule)
+            .with_timezone(TimeZone::fixed(Offset::constant(3)))
+            .instrumented(span);
 
-        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
-            println!("Running cronjob for timestamp: {:?} with id {}", job, id);
+        async fn send_reminder(job: Tick<TimeZone>, id: TaskId) -> Result<(), BoxDynError> {
+            info!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())
         }
@@ -36,7 +46,6 @@ mod tests {
         let worker = WorkerBuilder::new("rango-tango")
             .backend(backend)
             .on_event(move |ctx, ev| {
-                println!("{:?}", ev);
                 let ctx = ctx.clone();
                 if matches!(ev, Event::Error(_)) {
                     tokio::spawn(async move {

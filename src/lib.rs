@@ -15,15 +15,14 @@
 )]
 
 mod backend;
-mod context;
+mod config;
 mod error;
 mod schedule;
 mod tick;
-mod timezone;
+/// Helper utilities for dealing with timezones
+pub mod timezone;
 
-const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
-
-pub use {backend::*, context::*, error::*, schedule::*, tick::*, timezone::*};
+pub use {backend::*, config::*, error::*, schedule::*, tick::*};
 
 #[cfg(test)]
 mod tests {
@@ -37,23 +36,16 @@ mod tests {
     use cron::Schedule;
     use tower::{limit::ConcurrencyLimitLayer, load_shed::LoadShedLayer};
 
-    use crate::{backend::CronStream, context::CronContext, tick::Tick};
+    use crate::{backend::CronScheduler, tick::Tick};
 
     #[tokio::test]
     async fn basic_worker() {
         let schedule = Schedule::from_str("1/1 * * * * *").unwrap();
-        let stream = CronStream::new(schedule);
+        let stream = CronScheduler::new(schedule);
 
-        async fn send_reminder(
-            tick: Tick<Utc>,
-            meta: CronContext<Schedule>,
-        ) -> Result<(), BoxDynError> {
+        async fn send_reminder(tick: Tick) -> Result<(), BoxDynError> {
             tokio::time::sleep(Duration::from_secs(1)).await;
-            println!(
-                "Running cronjob for timestamp: {} with meta: {:?}",
-                tick.get_timestamp(),
-                meta
-            );
+            println!("Running cronjob for timestamp: {}", tick.get_timestamp(),);
             Err("Failed".into())
         }
 
@@ -79,18 +71,11 @@ mod tests {
     async fn load_shedding_worker() {
         // We are generating a new cron job every second
         let schedule = Schedule::from_str("1/1 * * * * *").unwrap();
-        let stream = CronStream::new(schedule);
+        let stream = CronScheduler::new(schedule);
 
         // But a single job can take longer than a second to complete
-        async fn send_reminder(
-            tick: Tick<Utc>,
-            ctx: CronContext<Schedule>,
-        ) -> Result<(), BoxDynError> {
-            println!(
-                "Running cronjob for timestamp: {} with ctx: {:?}",
-                tick.get_timestamp(),
-                ctx.schedule().unwrap().to_string()
-            );
+        async fn send_reminder(tick: Tick<Utc>) -> Result<(), BoxDynError> {
+            println!("Running cronjob for timestamp: {}", tick.get_timestamp());
             tokio::time::sleep(Duration::from_secs(2)).await;
             Err("Failed".into())
         }
@@ -126,15 +111,15 @@ mod tests {
     #[cfg(feature = "serde")]
     #[tokio::test]
     async fn piped_worker() {
-        use apalis_core::{backend::pipe::PipeExt, task::task_id::RandomId, task::task_id::TaskId};
+        use apalis_core::{backend::ext::BackendExt, task::task_id::TaskId};
         use apalis_file_storage::JsonStorage;
         let schedule = Schedule::from_str("1/1 * * * * *").unwrap();
-        let stream = CronStream::new(schedule);
+        let stream = CronScheduler::new(schedule);
         let in_memory = JsonStorage::new_temp().unwrap();
 
         let backend = stream.pipe_to(in_memory);
 
-        async fn send_reminder(job: Tick, id: TaskId<RandomId>) -> Result<(), BoxDynError> {
+        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
             println!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())

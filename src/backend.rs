@@ -1,5 +1,5 @@
 use std::{
-    fmt::Display,
+    fmt::Debug,
     future::Future,
     pin::Pin,
     task::{Context, Poll},
@@ -7,146 +7,233 @@ use std::{
 };
 
 use apalis_core::{
-    backend::{Backend, TaskStream},
+    backend::{Backend, BackendConfig, TryNewBackend, finalize::Ephemeral},
     features_table,
     layers::Identity,
     task::{Task, builder::TaskBuilder, task_id::TaskId},
     timer::Delay,
     worker::context::WorkerContext,
 };
-use chrono::{DateTime, TimeZone, Utc};
-use futures_util::{
-    Stream, StreamExt, TryStreamExt,
-    stream::{self, BoxStream},
-};
+use futures_util::Stream;
 use ulid::Ulid;
 
-use crate::{context::CronContext, error::CronStreamError, schedule::Schedule, tick::Tick};
+use crate::{config::Config, error::Error, schedule::Schedule, tick::Tick, timezone::Utc};
 
-/// Represents a stream from a cron schedule with a timezone
+/// A backend that produces tasks based on a cron schedule.
 #[doc = features_table! {
     setup = "unreachable!();",
-    TaskSink => not_supported("You cannot push tasks to a cron stream"),
+    TaskSink => not_supported("You cannot push tasks to a cron scheduler"),
 }]
 #[derive(Debug)]
-pub struct CronStream<S: Schedule<Timezone>, Timezone: chrono::TimeZone> {
-    schedule: S,
-    timezone: Timezone,
-    next_tick: Option<DateTime<Timezone>>,
+pub struct CronScheduler<S, Tz = Utc> {
+    config: Config<S, Tz>,
+    next_tick: Option<Tick<Tz>>,
     delay: Option<Delay>,
 }
 
-impl<S: Schedule<Utc>> CronStream<S, Utc> {
-    /// Build a new cron stream from a schedule using the UTC timezone
-    pub fn new(schedule: S) -> Self {
-        Self::new_with_timezone(schedule, Utc)
-    }
-}
-
-impl<S: Schedule<Tz>, Tz: chrono::TimeZone> CronStream<S, Tz> {
-    /// Build a new cron stream from a schedule and timezone
-    pub fn new_with_timezone(schedule: S, timezone: Tz) -> Self {
-        Self {
-            schedule,
-            timezone,
+impl<S> CronScheduler<S, Utc> {
+    /// Build a new cron scheduler from a [Schedule] using the [Utc] timezone
+    pub const fn new(schedule: S) -> CronScheduler<S> {
+        CronScheduler {
+            config: Config::new(schedule, Utc),
             next_tick: None,
             delay: None,
         }
     }
 }
 
-impl<S: Schedule<Tz> + Unpin, Tz: TimeZone + Unpin> Stream for CronStream<S, Tz>
-where
-    Tz::Offset: Unpin,
-{
-    type Item = Result<Tick<Tz>, CronStreamError<Tz>>;
-
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let this = self.as_mut().get_mut();
-        loop {
-            match &mut this.next_tick {
-                Some(next) => {
-                    // If we haven't set the delay yet, set it now.
-                    if this.delay.is_none() {
-                        let now = Utc::now();
-                        let td = next.clone().signed_duration_since(now);
-                        let duration = match td.to_std() {
-                            Ok(d) => d,
-                            Err(e) => {
-                                return Poll::Ready(Some(Err(CronStreamError::OutOfRangeError {
-                                    inner: e,
-                                    tick: next.clone(),
-                                })));
-                            }
-                        };
-                        this.delay = Some(Delay::new(duration));
-                    }
-
-                    // Poll the delay future
-                    match Pin::new(this.delay.as_mut().unwrap()).poll(cx) {
-                        Poll::Pending => return Poll::Pending,
-                        Poll::Ready(()) => {
-                            let fired = next.clone();
-
-                            // Update next_tick and delay.
-                            let next_tick = this.schedule.next_tick(&this.timezone);
-                            self.next_tick = next_tick;
-                            self.delay = None;
-                            return Poll::Ready(Some(Ok(Tick::new(fired))));
-                        }
-                    }
-                }
-                None => {
-                    let next_tick = this.schedule.next_tick(&this.timezone);
-                    match next_tick {
-                        Some(next) => this.next_tick = Some(next),
-                        None => return Poll::Ready(None),
-                    }
-                }
-            }
+impl<Schedule: Clone, Timezone: Clone> Clone for CronScheduler<Schedule, Timezone> {
+    fn clone(&self) -> Self {
+        Self {
+            config: self.config.clone(),
+            next_tick: None,
+            delay: None,
         }
     }
 }
 
-impl<S: Schedule<Tz> + Unpin + Send + Sync + 'static + Clone, Tz: Unpin> Backend
-    for CronStream<S, Tz>
-where
-    Tz: TimeZone + Send + Sync + 'static,
-    Tz::Offset: Send + Sync + Unpin + Display,
-{
-    type Args = Tick<Tz>;
-    type Context = CronContext<S>;
-    type Error = CronStreamError<Tz>;
-    type Stream = TaskStream<Task<Tick<Tz>, Self::Context, Ulid>, CronStreamError<Tz>>;
-
-    type Layer = Identity;
-
-    type IdType = Ulid;
-
-    type Beat = BoxStream<'static, Result<(), Self::Error>>;
-
-    fn heartbeat(&self, _: &WorkerContext) -> Self::Beat {
-        stream::once(async { Ok(()) }).boxed()
+impl<S: Schedule<Tz>, Tz> CronScheduler<S, Tz> {
+    /// Convert the cron scheduler into a stream of ticks
+    pub fn into_stream(self) -> impl Stream<Item = Result<Tick<Tz>, Error>>
+    where
+        Self: Backend<Task = Task<Tick<Tz>>, Error = Error> + BackendConfig<Args = Tick<Tz>>,
+    {
+        let mut cron = self;
+        futures_util::stream::poll_fn(move |cx| {
+            match cron.poll_next(cx, &WorkerContext::new("cron-scheduler")) {
+                Poll::Ready(Some(Ok(task))) => Poll::Ready(Some(Ok(task.args))),
+                Poll::Ready(Some(Err(e))) => Poll::Ready(Some(Err(e))),
+                Poll::Ready(None) => Poll::Ready(None),
+                Poll::Pending => Poll::Pending,
+            }
+        })
     }
-    fn middleware(&self) -> Self::Layer {
+}
+
+impl<S, T> CronScheduler<S, T> {
+    /// Build a new cron with specific timezone
+    pub fn with_timezone<Tz>(self, timezone: Tz) -> CronScheduler<S, Tz> {
+        CronScheduler {
+            config: Config::new(self.config.schedule, timezone),
+            next_tick: None,
+            delay: None,
+        }
+    }
+}
+
+impl<S, Tz> Backend for CronScheduler<S, Tz>
+where
+    S: Schedule<Tz>,
+    Tz: Debug + Clone,
+{
+    type Task = Task<Tick<Tz>>;
+    type Error = Error;
+
+    fn poll_ready(
+        &mut self,
+        _: &mut Context<'_>,
+        _: &WorkerContext,
+    ) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn poll_next(
+        &mut self,
+        cx: &mut Context<'_>,
+        _: &WorkerContext,
+    ) -> Poll<Option<Result<Self::Task, Self::Error>>> {
+        tracing::trace!(
+            has_next_tick = self.next_tick.is_some(),
+            has_delay = self.delay.is_some(),
+            "polling cron scheduler"
+        );
+
+        let tz = self.config.timezone().clone();
+        let next_tick = {
+            if self.next_tick.is_none() {
+                tracing::trace!("calculating next cron tick");
+
+                self.next_tick = self.config.schedule.next_tick(&tz);
+
+                if self.next_tick.is_none() {
+                    tracing::debug!("cron schedule exhausted");
+                    return Poll::Ready(None);
+                }
+            }
+
+            if self.delay.is_none() {
+                let next = self.next_tick.as_ref().unwrap();
+                let now = SystemTime::now();
+
+                tracing::trace!(
+                    tick = ?next,
+                    now = ?now,
+                    "creating delay until next cron tick"
+                );
+
+                let duration = match next.signed_duration_since(now) {
+                    Ok(d) => d,
+                    Err(e) => {
+                        tracing::warn!(
+                            tick = ?next,
+                            error = ?e,
+                            "cron tick is out of range"
+                        );
+
+                        return Poll::Ready(Some(Err(Error::OutOfRange {
+                            duration: e,
+                            tick: next.get_timestamp(),
+                        })));
+                    }
+                };
+
+                tracing::trace!(?duration, "cron delay created");
+
+                self.delay = Some(Delay::new(duration));
+            }
+
+            match Pin::new(self.delay.as_mut().unwrap()).poll(cx) {
+                Poll::Pending => {
+                    tracing::trace!("cron delay pending");
+                    Poll::Pending
+                }
+
+                Poll::Ready(()) => {
+                    let fired = self.next_tick.take().unwrap();
+
+                    tracing::debug!(
+                        tick = ?fired,
+                        "cron tick fired"
+                    );
+                    self.delay = None;
+
+                    self.next_tick = self.config.schedule.next_tick(&tz);
+
+                    tracing::trace!(
+                        next_tick = ?self.next_tick,
+                        "scheduled next cron tick"
+                    );
+
+                    Poll::Ready(Some(Ok(fired)))
+                }
+            }
+        };
+
+        next_tick.map(|opt| {
+            opt.map(|res| {
+                res.map(|tick| {
+                    let timestamp: SystemTime = tick.system_time();
+                    let task_id = Ulid::from_datetime(timestamp);
+
+                    tracing::trace!(
+                        timestamp = ?timestamp,
+                        %task_id,
+                        "building cron task"
+                    );
+
+                    TaskBuilder::new(tick)
+                        .task_id(TaskId::Ulid(task_id))
+                        .build()
+                })
+            })
+        })
+    }
+
+    fn poll_close(
+        &mut self,
+        _: &mut Context<'_>,
+        _: &WorkerContext,
+    ) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
+}
+
+impl<S, Tz> BackendConfig for CronScheduler<S, Tz> {
+    type Args = Tick<Tz>;
+    type Config = Config<S, Tz>;
+    type Kind = Ephemeral;
+    type Layer = Identity;
+    type Id = Ulid;
+
+    fn config(&self) -> &Self::Config {
+        &self.config
+    }
+
+    fn middleware(&mut self, _: &mut WorkerContext) -> Self::Layer {
         Identity::new()
     }
+}
 
-    fn poll(self, _: &WorkerContext) -> Self::Stream {
-        let ctx = CronContext::new(self.schedule.clone().into());
-        let stream = TryStreamExt::and_then(self, move |tick| {
-            let ctx = ctx.clone();
-            async move {
-                let timestamp: SystemTime = tick.get_timestamp().clone().into();
-                let task_id = Ulid::from_datetime(timestamp);
-                let task = TaskBuilder::new(tick)
-                    .with_ctx(ctx.clone())
-                    .with_task_id(TaskId::new(task_id))
-                    .build();
-
-                Ok(Some(task))
-            }
-        });
-        stream.boxed()
+impl<S: Schedule<Tz>, Tz> TryNewBackend for CronScheduler<S, Tz>
+where
+    Self: Backend + BackendConfig<Args = Tick<Tz>, Config = Config<S, Tz>>,
+{
+    type Backend = Self;
+    fn try_new(config: Self::Config) -> Result<Self, Self::Error> {
+        Ok(CronScheduler {
+            config,
+            delay: None,
+            next_tick: None,
+        })
     }
 }

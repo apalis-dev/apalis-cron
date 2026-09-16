@@ -30,7 +30,7 @@ This means you can leverage the full power of workers and middleware, including:
 
 ```rust,no_run
 use apalis::{layers::retry::RetryPolicy, prelude::*};
-use apalis_cron::{CronStream, Tick};
+use apalis_cron::{CronScheduler, Tick};
 use cron::Schedule;
 use std::str::FromStr;
 
@@ -43,7 +43,7 @@ async fn main() {
     let schedule = Schedule::from_str("@daily").unwrap();
 
     let worker = WorkerBuilder::new("morning-cereal")
-        .backend(CronStream::new(schedule))
+        .backend(CronScheduler::new(schedule))
         .retry(RetryPolicy::retries(5))
         .data(42usize)
         .build(handle_tick);
@@ -56,7 +56,7 @@ async fn main() {
 
 ```rust,no_run
 use apalis::{layers::retry::RetryPolicy, prelude::*};
-use apalis_cron::{CronStream, Tick, builder::schedule};
+use apalis_cron::{CronScheduler, Tick, builder::schedule};
 use chrono::Local;
 
 async fn handle_tick(tick: Tick<Local>, data: Data<usize>) -> Result<(), BoxDynError> {
@@ -67,7 +67,7 @@ async fn handle_tick(tick: Tick<Local>, data: Data<usize>) -> Result<(), BoxDynE
 #[tokio::main]
 async fn main() -> Result<(), BoxDynError> {
     let schedule = schedule().each().day().at("9:30").build();
-    let backend = CronStream::new_with_timezone(schedule, Local);
+    let backend =  CronScheduler::new(schedule).with_timezone(Local);
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(backend)
         .retry(RetryPolicy::retries(5))
@@ -84,7 +84,7 @@ async fn main() -> Result<(), BoxDynError> {
 ```rust,no_run
 use apalis::{layers::retry::RetryPolicy, prelude::*};
 use apalis_cron::english::EnglishRoutine;
-use apalis_cron::{CronStream, Tick};
+use apalis_cron::{CronScheduler, Tick};
 use std::str::FromStr;
 
 async fn handle_tick(tick: Tick, data: Data<usize>) -> Result<(), BoxDynError> {
@@ -97,7 +97,7 @@ async fn main() {
     let schedule = EnglishRoutine::from_str("every day").unwrap();
 
     let worker = WorkerBuilder::new("morning-cereal")
-        .backend(CronStream::new(schedule))
+        .backend(CronScheduler::new(schedule))
         .retry(RetryPolicy::retries(5))
         .data(42usize)
         .build(handle_tick);
@@ -116,7 +116,7 @@ Sometimes we may want to persist cron jobs for several reasons:
 
 ```rust,no_run
 use apalis::{layers::retry::RetryPolicy, prelude::*};
-use apalis_cron::{CronStream, Tick};
+use apalis_cron::{CronScheduler, Tick};
 use apalis_sqlite::{SqlitePool, SqliteStorage};
 use cron::Schedule;
 use std::str::FromStr;
@@ -135,7 +135,7 @@ async fn main() {
         .expect("unable to run migrations for sqlite");
     let sqlite = SqliteStorage::new(&pool);
 
-    let cron = CronStream::new(schedule);
+    let cron = CronScheduler::new(schedule);
     let backend = cron.pipe_to(sqlite);
 
     let worker = WorkerBuilder::new("morning-cereal")
@@ -154,7 +154,7 @@ You can customize the way ticks are provided by implementing your own `Schedule`
 
 ```rust,no_run
 use apalis::prelude::*;
-use apalis_cron::{CronStream, Schedule, Tick};
+use apalis_cron::{CronScheduler, Schedule, Tick};
 use chrono::{DateTime, Duration, Local, NaiveTime};
 
 /// Daily routine at 8am
@@ -162,7 +162,7 @@ use chrono::{DateTime, Duration, Local, NaiveTime};
 struct MyDailyRoutine;
 
 impl Schedule<Local> for MyDailyRoutine {
-    fn next_tick(&mut self, _: &Local) -> Option<DateTime<Local>> {
+    fn next_tick(&mut self, _: &Local) -> Option<Tick<Local>> {
         let now = Local::now();
         // Add 1 day to get tomorrow
         let tomorrow = now.date_naive() + Duration::days(1);
@@ -176,7 +176,7 @@ impl Schedule<Local> for MyDailyRoutine {
             .and_local_timezone(Local)
             .unwrap();
 
-        Some(tomorrow_eight_am)
+        Some(Tick::new(tomorrow_eight_am.timestamp() as u64))
     }
 }
 
@@ -187,7 +187,7 @@ async fn handle_tick(tick: Tick<Local>, data: Data<usize>) -> Result<(), BoxDynE
 
 #[tokio::main]
 async fn main() {
-    let cron_stream = CronStream::new_with_timezone(MyDailyRoutine, Local);
+    let cron_stream = CronScheduler::new(MyDailyRoutine).with_timezone(Local);
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(cron_stream)
         .build(handle_tick);

@@ -1,5 +1,5 @@
 use apalis::{layers::retry::RetryPolicy, prelude::*};
-use apalis_cron::{CronStream, Tick, builder::schedule};
+use apalis_cron::{CronScheduler, Tick, builder::schedule};
 
 async fn handle_tick(tick: Tick, data: Data<usize>) -> Result<(), BoxDynError> {
     println!("Handling tick: {:?} with data: {:?}", tick, data);
@@ -8,8 +8,8 @@ async fn handle_tick(tick: Tick, data: Data<usize>) -> Result<(), BoxDynError> {
 
 #[tokio::main]
 async fn main() -> Result<(), BoxDynError> {
-    let schedule = schedule().each().day().build();
-    let backend = CronStream::new(schedule);
+    let schedule = schedule().every(1).minutes().build();
+    let backend = CronScheduler::new(schedule);
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(backend)
         .retry(RetryPolicy::retries(5))
