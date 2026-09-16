@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- deps(deps): bump tokio from 1.52.2 to 1.53.1 ([#66](https://github.com/apalis-dev/apalis-cron/pull/66))
 ## [1.0.0-rc.8] - 2026-05-08
 
 - _bump_: to v1.0.0-rc.8 (#51)
