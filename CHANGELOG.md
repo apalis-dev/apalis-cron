@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- deps(deps): bump serde_json from 1.0.149 to 1.0.151 ([#65](https://github.com/apalis-dev/apalis-cron/pull/65))
 ## [1.0.0-rc.8] - 2026-05-08
 
 - _bump_: to v1.0.0-rc.8 (#51)
