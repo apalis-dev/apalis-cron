@@ -2,6 +2,8 @@ use std::fmt;
 
 use chrono::{DateTime, Datelike, Duration, TimeZone, Timelike, Utc, Weekday};
 
+use crate::Tick;
+
 /// Time units for scheduling
 #[derive(Debug, Clone)]
 pub enum TimeUnit {
@@ -332,12 +334,9 @@ impl WeekdayBuilder {
 
 /// Iterator over schedule ticks
 #[derive(Debug, Clone)]
-pub struct ScheduleIterator<Tz = Utc>
-where
-    Tz: chrono::TimeZone,
-{
+pub struct ScheduleIterator<Tz> {
     schedule: ScheduleBuilder,
-    current: Option<DateTime<Tz>>,
+    current: Option<Tick<Tz>>,
 }
 
 impl<Tz: chrono::TimeZone> ScheduleIterator<Tz> {
@@ -358,7 +357,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "ScheduleIterator(schedule = {:?}, ", self.schedule)?;
         match &self.current {
-            Some(dt) => write!(f, "next = {})", dt),
+            Some(dt) => write!(f, "next = {})", dt.get_timestamp()),
             None => write!(f, "end)"),
         }
     }
@@ -401,17 +400,18 @@ impl fmt::Display for ScheduleBuilder {
     }
 }
 
-impl<Tz: chrono::TimeZone> crate::schedule::Schedule<Tz> for ScheduleIterator<Tz> {
-    fn next_tick(&mut self, tz: &Tz) -> Option<DateTime<Tz>> {
+impl<Tz: Clone + TimeZone> crate::schedule::Schedule<Tz> for ScheduleIterator<Tz> {
+    fn next_tick(&mut self, _: &Tz) -> Option<Tick<Tz>> {
         let current = self
             .current
             .take()
-            .unwrap_or(Utc::now().with_timezone(tz))
-            .with_timezone(&Utc);
+            .and_then(|t| DateTime::from_timestamp_secs(t.get_timestamp() as _))
+            .unwrap_or(Utc::now());
         let next = self
             .schedule
             .calculate_next_execution(current)
-            .map(|dt| dt.with_timezone(tz));
+            .map(|dt| dt.timestamp() as u64)
+            .map(Tick::new);
         self.current = next.clone();
         next
     }
@@ -424,9 +424,8 @@ mod tests {
         task::task_id::TaskId,
         worker::{builder::WorkerBuilder, event::Event, ext::event_listener::EventListenerExt},
     };
-    use ulid::Ulid;
 
-    use crate::{backend::CronStream, tick::Tick};
+    use crate::{backend::CronScheduler, tick::Tick};
 
     use super::*;
 
@@ -461,9 +460,9 @@ mod tests {
     #[tokio::test]
     async fn basic_worker() {
         let schedule = schedule().each().minute().at(":06").build();
-        let backend = CronStream::new(schedule);
+        let backend = CronScheduler::new(schedule);
 
-        async fn send_reminder(job: Tick, id: TaskId<Ulid>) -> Result<(), BoxDynError> {
+        async fn send_reminder(job: Tick, id: TaskId) -> Result<(), BoxDynError> {
             println!("Running cronjob for timestamp: {:?} with id {}", job, id);
             tokio::time::sleep(Duration::from_secs(1)).await;
             Err("All failing".into())

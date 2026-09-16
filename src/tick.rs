@@ -1,71 +1,44 @@
-use chrono::{DateTime, TimeZone, Utc};
+use std::{
+    marker::PhantomData,
+    time::{Duration, SystemTime},
+};
+
+use crate::timezone::Utc;
 
 /// Represents a single tick in the cron schedule
-#[derive(Debug, Clone)]
-pub struct Tick<Tz: TimeZone = Utc> {
-    /// The timestamp of the tick
-    timestamp: DateTime<Tz>,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct Tick<Tz = Utc> {
+    /// The timestamp of the tick in UTC
+    timestamp: u64,
+    _marker: PhantomData<Tz>,
 }
 
-impl<Tz: TimeZone> Default for Tick<Tz>
-where
-    DateTime<Tz>: Default,
-{
-    fn default() -> Self {
-        Self {
-            timestamp: Default::default(),
-        }
-    }
-}
-
-impl<Tz: TimeZone> Tick<Tz> {
+impl<Tz> Tick<Tz> {
     /// Create a new context provided a timestamp
-    pub fn new(timestamp: DateTime<Tz>) -> Self {
-        Self { timestamp }
+    pub fn new(timestamp: u64) -> Self {
+        Self {
+            timestamp,
+            _marker: PhantomData,
+        }
     }
 
     /// Get the inner timestamp
-    pub fn get_timestamp(&self) -> &DateTime<Tz> {
-        &self.timestamp
-    }
-}
-
-#[cfg(feature = "serde")]
-mod serde_impl {
-    use super::*;
-    use crate::{FORMAT, timezone::TimeZoneExt};
-    use chrono::NaiveDateTime;
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-    impl<Tz> Serialize for Tick<Tz>
-    where
-        Tz: TimeZone,
-        Tz::Offset: std::fmt::Display,
-    {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            let s = self.timestamp.format(FORMAT).to_string();
-            serializer.serialize_str(&s)
-        }
+    pub fn get_timestamp(&self) -> u64 {
+        self.timestamp
     }
 
-    impl<'de, Tz> Deserialize<'de> for Tick<Tz>
-    where
-        Tz: TimeZone + TimeZoneExt,
-    {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s = String::deserialize(deserializer)?;
-            let naive =
-                NaiveDateTime::parse_from_str(&s, FORMAT).map_err(serde::de::Error::custom)?;
-            let datetime =
-                Tz::from_utc_datetime(&Tz::from_offset(&Tz::utc_offset_from_naive(&naive)), &naive);
-            Ok(Tick {
-                timestamp: datetime,
-            })
-        }
+    /// Returns the duration between this tick and a [`SystemTime`].
+    ///
+    /// The `Ok` value is returned when the tick is at or after `system_time`,
+    /// while the `Err` value is returned when the tick is before `system_time`.
+    pub(crate) fn signed_duration_since(&self, time: SystemTime) -> Result<Duration, Duration> {
+        self.system_time()
+            .duration_since(time)
+            .map_err(|e| e.duration())
+    }
+
+    pub(crate) fn system_time(&self) -> SystemTime {
+        SystemTime::UNIX_EPOCH + Duration::from_secs(self.timestamp)
     }
 }

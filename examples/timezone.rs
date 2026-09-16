@@ -1,11 +1,11 @@
 use apalis::{layers::retry::RetryPolicy, prelude::*};
-use apalis_cron::{CronStream, Tick, builder::schedule};
+use apalis_cron::{CronScheduler, Tick, builder::schedule};
 use chrono::Local;
 
 #[tokio::main]
 async fn main() -> Result<(), BoxDynError> {
     let schedule = schedule().each().day().at("9:30").build();
-    let backend = CronStream::new_with_timezone(schedule, Local);
+    let backend = CronScheduler::new(schedule).with_timezone(Local);
     let worker = WorkerBuilder::new("morning-cereal")
         .backend(backend)
         .retry(RetryPolicy::retries(5))

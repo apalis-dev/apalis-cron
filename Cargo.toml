@@ -1,6 +1,6 @@
 [package]
 name = "apalis-cron"
-version = "1.0.0-rc.8"
+version = "1.0.0-rc.9"
 edition = "2024"
 repository = "https://github.com/apalis-dev/apalis-cron"
 authors = ["Njuguna Mureithi <mureithinjuguna@gmail.com>"]
@@ -13,23 +13,33 @@ rust-version = "1.85.0"
 [features]
 default = ["cron", "serde"]
 ## Enable support for `cron` crate
-cron = ["dep:cron"]
+## Enable Chrono
+chrono = ["dep:chrono", "dep:chrono-tz"]
+cron = ["dep:cron", "chrono"]
 docsrs = ["dep:document-features"]
 ## Enable serde support
-serde = ["dep:serde", "chrono/serde", "apalis-core/serde"]
+serde = ["dep:serde", "chrono?/serde", "apalis-core/serde"]
 ## Enable support for `english-to-cron` crate
-english = ["dep:english-to-cron", "dep:cron"]
+english = ["dep:english-to-cron", "dep:cron", "chrono"]
+## Include the builder format
+builder = ["chrono"]
+## Include Jiff support
+jiff = ["dep:jiff-cron"]
 
 [dependencies]
-apalis-core = { version = "1.0.0-rc.9", default-features = false, features = [
-    "sleep",
-] }
+apalis-core = { version = "1.0.0-rc.10", features = ["sleep", "ulid"] }
+tracing = "0.1"
+chrono-tz = { version = "0.10.4", optional = true }
+thiserror = "2"
 cron = { version = "0.16.0", optional = true }
-futures-util = { version = "0.3.30", default-features = false }
-chrono = { version = "0.4.38", default-features = false, features = ["clock"] }
+futures-util = { version = "0.3.34", default-features = false }
+chrono = { version = "0.4.45", default-features = false, features = [
+    "clock",
+], optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
-ulid = { version = "1" }
-english-to-cron = { version = "0.1.6", optional = true }
+ulid = { version = "3", features = ["serde"] }
+english-to-cron = { version = "0.1.7", optional = true }
+jiff-cron = { version = "0.3.0", optional = true }
 
 [dependencies.document-features]
 version = "0.2"
@@ -38,13 +48,15 @@ optional = true
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.5", features = ["full"] }
-apalis = { version = "1.0.0-rc.3" }
-apalis-sqlite = { version = "1.0.0-rc.8" }
-apalis-workflow = { version = "0.1.0-rc.9" }
-apalis-codec = { version = "0.1.0-rc.9" }
+apalis-sqlite = { version = "1.0.0-rc.9" }
+sqlx = { version = "0.9.0", default-features = false, features = ["sqlite"] }
+apalis = { version = "1.0.0-rc.10" }
+apalis-workflow = { version = "0.1.0-rc.10" }
+apalis-codec = { version = "0.1.0-rc.10", features = ["msgpack"] }
 serde_json = "1.0"
 apalis-cron = { path = ".", features = ["cron", "serde", "english"] }
-apalis-file-storage = { version = "0.1.0-rc.9" }
+apalis-file-storage = { version = "0.1.0-rc.10" }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 
 [package.metadata.docs.rs]
