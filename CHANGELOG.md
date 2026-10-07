@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+<<<<<<< Updated upstream
+- *bump*: to v1.0.0-rc.10 ([#72](https://github.com/apalis-dev/apalis-cron/pull/72))
+=======
+## [1.0.0-rc.10] - 2026-10-07
+
+>>>>>>> Stashed changes
 - ci(deps): bump actions/stale from 10 to 11 ([#67](https://github.com/apalis-dev/apalis-cron/pull/67))
-- *bump*: to v1.0.0-rc.9 ([#69](https://github.com/apalis-dev/apalis-cron/pull/69))
+
+## [1.0.0-rc.9] - 2026-10-02
+
+- _bump_: to v1.0.0-rc.9 ([#69](https://github.com/apalis-dev/apalis-cron/pull/69))
+
 ## [1.0.0-rc.8] - 2026-05-08
 
 - _bump_: to v1.0.0-rc.8 (#51)
