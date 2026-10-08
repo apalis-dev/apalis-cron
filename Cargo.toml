@@ -1,6 +1,6 @@
 [package]
 name = "apalis-cron"
-version = "1.0.0-rc.9"
+version = "1.0.0-rc.10"
 edition = "2024"
 repository = "https://github.com/apalis-dev/apalis-cron"
 authors = ["Njuguna Mureithi <mureithinjuguna@gmail.com>"]
@@ -27,11 +27,11 @@ builder = ["chrono"]
 jiff = ["dep:jiff-cron"]
 
 [dependencies]
-apalis-core = { version = "1.0.0-rc.10", features = ["sleep", "ulid"] }
+apalis-core = { version = "1.0.0-rc.11", features = ["sleep", "ulid"] }
 tracing = "0.1"
 chrono-tz = { version = "0.10.4", optional = true }
 thiserror = "2"
-cron = { version = "0.16.0", optional = true }
+cron = { version = "0.17.0", optional = true }
 futures-util = { version = "0.3.34", default-features = false }
 chrono = { version = "0.4.45", default-features = false, features = [
     "clock",
@@ -48,16 +48,25 @@ optional = true
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }
 tower = { version = "0.5", features = ["full"] }
-apalis-sqlite = { version = "1.0.0-rc.9" }
+apalis-sqlite = { version = "1.0.0-rc.11" }
 sqlx = { version = "0.9.0", default-features = false, features = ["sqlite"] }
-apalis = { version = "1.0.0-rc.10" }
-apalis-workflow = { version = "0.1.0-rc.10" }
-apalis-codec = { version = "0.1.0-rc.10", features = ["msgpack"] }
+apalis = { version = "1.0.0-rc.11", features = ["task-context"] }
+apalis-workflow = { version = "0.1.0-rc.11" }
+apalis-codec = { version = "0.1.0-rc.11", features = ["msgpack"] }
 serde_json = "1.0"
 apalis-cron = { path = ".", features = ["cron", "serde", "english"] }
-apalis-file-storage = { version = "0.1.0-rc.10" }
+apalis-file-storage = { version = "0.1.0-rc.11" }
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
+[[example]]
+name = "timezone"
+path = "examples/timezone.rs"
+required-features = ["builder"]
+
+[[example]]
+name = "builder"
+path = "examples/builder.rs"
+required-features = ["builder"]
 
 [package.metadata.docs.rs]
 # defines the configuration attribute `docsrs`
