@@ -11,6 +11,9 @@ impl Schedule<TimeZone> for jiff_cron::Schedule {
     }
 }
 
+/// Re-export jiff_cron::Schedule as JiffSchedule for convenience
+pub use jiff_cron::Schedule as JiffSchedule;
+
 #[cfg(test)]
 mod tests {
     use apalis_core::{
