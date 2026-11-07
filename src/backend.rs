@@ -140,10 +140,13 @@ where
                             "cron tick is out of range"
                         );
 
-                        return Poll::Ready(Some(Err(Error::OutOfRange {
-                            duration: e,
-                            tick: next.get_timestamp(),
-                        })));
+                        let tick = next.get_timestamp();
+                        // Drop the missed tick so the next poll schedules the one after it.
+                        // Keeping it would make every later poll fail on the same tick, with
+                        // no delay in between.
+                        self.next_tick = None;
+
+                        return Poll::Ready(Some(Err(Error::OutOfRange { duration: e, tick })));
                     }
                 };
 
@@ -235,5 +238,58 @@ where
             delay: None,
             next_tick: None,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        collections::VecDeque,
+        time::{Duration, SystemTime, UNIX_EPOCH},
+    };
+
+    use futures_util::{FutureExt, StreamExt};
+
+    use super::*;
+
+    /// A schedule that yields fixed timestamps in order.
+    #[derive(Debug)]
+    struct Fixed(VecDeque<u64>);
+
+    impl Schedule<Utc> for Fixed {
+        fn next_tick(&mut self, _: &Utc) -> Option<Tick<Utc>> {
+            self.0.pop_front().map(Tick::new)
+        }
+    }
+
+    fn unix_now() -> u64 {
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    }
+
+    /// An out-of-range tick must be reported once, then skipped.
+    #[test]
+    fn out_of_range_tick_is_skipped_after_the_error() {
+        let now = unix_now();
+        let missed = now - 60;
+        let upcoming = now + 3600;
+        let mut stream =
+            CronScheduler::new(Fixed(VecDeque::from([missed, upcoming]))).into_stream();
+
+        match stream.next().now_or_never() {
+            Some(Some(Err(Error::OutOfRange { tick, duration }))) => {
+                assert_eq!(tick, missed);
+                assert!(duration >= Duration::from_secs(59));
+            }
+            other => panic!("expected the missed tick to be reported, got {other:?}"),
+        }
+
+        // The next poll waits for the following tick instead of failing again.
+        assert!(
+            stream.next().now_or_never().is_none(),
+            "the scheduler kept returning the missed tick"
+        );
     }
 }

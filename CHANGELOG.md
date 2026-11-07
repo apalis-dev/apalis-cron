@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `CronScheduler` skips a tick after reporting it as `OutOfRange`, instead of returning the same error on every later poll ([#76](https://github.com/apalis-dev/apalis-cron/issues/76))
+
 ## [1.0.0] - 2026-10-12
 
 *bump*: to v1.0.0
