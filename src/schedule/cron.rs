@@ -7,6 +7,17 @@ impl<Tz: chrono::TimeZone> Schedule<Tz> for cron::Schedule {
             .map(|d| d.timestamp() as _)
             .map(Tick::new)
     }
+
+    fn next_tick_after(&mut self, tick: &Tick<Tz>, timezone: &Tz) -> Option<Tick<Tz>> {
+        // `after` is exclusive: the search starts one second past `tick`.
+        let after = timezone
+            .timestamp_opt(i64::try_from(tick.get_timestamp()).ok()?, 0)
+            .single()?;
+        self.after(&after)
+            .next()
+            .map(|d| d.timestamp() as _)
+            .map(Tick::new)
+    }
 }
 
 #[cfg(test)]
@@ -21,6 +32,31 @@ mod tests {
     use crate::{backend::CronScheduler, tick::Tick};
 
     use std::{str::FromStr, time::Duration};
+
+    /// 2026-11-10T02:20:00Z.
+    const TWENTY_PAST: u64 = 1_794_277_200;
+
+    fn next_after(expression: &str, tick: u64) -> Option<u64> {
+        let mut schedule = Schedule::from_str(expression).unwrap();
+        crate::schedule::Schedule::next_tick_after(&mut schedule, &Tick::new(tick), &chrono::Utc)
+            .map(|t| t.get_timestamp())
+    }
+
+    #[test]
+    fn next_tick_after_skips_the_tick_itself() {
+        assert_eq!(
+            next_after("0 */10 * * * *", TWENTY_PAST),
+            Some(TWENTY_PAST + 600)
+        );
+    }
+
+    #[test]
+    fn next_tick_after_returns_a_tick_one_second_later() {
+        assert_eq!(
+            next_after("0 */10 * * * *", TWENTY_PAST - 1),
+            Some(TWENTY_PAST)
+        );
+    }
 
     #[tokio::test]
     async fn basic_worker() {

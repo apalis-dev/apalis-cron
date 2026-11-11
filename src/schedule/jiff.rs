@@ -1,10 +1,25 @@
-use jiff_cron::jiff::tz::TimeZone;
+use jiff_cron::jiff::{Timestamp, tz::TimeZone};
 
 use crate::{Tick, schedule::Schedule};
 
 impl Schedule<TimeZone> for jiff_cron::Schedule {
     fn next_tick(&mut self, timezone: &TimeZone) -> Option<Tick<TimeZone>> {
         self.upcoming(timezone.clone())
+            .next()
+            .map(|d| d.timestamp().as_second() as _)
+            .map(Tick::new)
+    }
+
+    fn next_tick_after(
+        &mut self,
+        tick: &Tick<TimeZone>,
+        timezone: &TimeZone,
+    ) -> Option<Tick<TimeZone>> {
+        // `after` is exclusive: the search starts past `tick`.
+        let after = Timestamp::from_second(i64::try_from(tick.get_timestamp()).ok()?)
+            .ok()?
+            .to_zoned(timezone.clone());
+        self.after(after)
             .next()
             .map(|d| d.timestamp().as_second() as _)
             .map(Tick::new)
@@ -29,6 +44,31 @@ mod tests {
     use tracing::info;
 
     use crate::{backend::CronScheduler, tick::Tick};
+
+    /// 2026-11-10T02:20:00Z.
+    const TWENTY_PAST: u64 = 1_794_277_200;
+
+    fn next_after(expression: &str, tick: u64) -> Option<u64> {
+        let mut schedule = Schedule::from_str(expression).unwrap();
+        crate::schedule::Schedule::next_tick_after(&mut schedule, &Tick::new(tick), &TimeZone::UTC)
+            .map(|t| t.get_timestamp())
+    }
+
+    #[test]
+    fn next_tick_after_skips_the_tick_itself() {
+        assert_eq!(
+            next_after("0 */10 * * * *", TWENTY_PAST),
+            Some(TWENTY_PAST + 600)
+        );
+    }
+
+    #[test]
+    fn next_tick_after_returns_a_tick_one_second_later() {
+        assert_eq!(
+            next_after("0 */10 * * * *", TWENTY_PAST - 1),
+            Some(TWENTY_PAST)
+        );
+    }
 
     use std::{str::FromStr, time::Duration};
 

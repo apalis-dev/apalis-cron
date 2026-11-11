@@ -19,6 +19,20 @@ pub mod english;
 pub trait Schedule<Tz> {
     /// Returns the next scheduled tick or `None` if there are no more ticks.
     fn next_tick(&mut self, tz: &Tz) -> Option<Tick<Tz>>;
+
+    /// Returns the first tick strictly after `tick`, or `None` if there are no more ticks.
+    ///
+    /// [`CronScheduler`](crate::CronScheduler) calls this once `tick` has fired, so the
+    /// next tick does not depend on whether the timer fired a little before or after the
+    /// wall clock reached `tick`. Computing it from the current time instead can hand back
+    /// `tick` itself when the timer fires early.
+    ///
+    /// The default falls back to [`Schedule::next_tick`]. Implement it for schedules that
+    /// can compute the next tick from a given instant.
+    fn next_tick_after(&mut self, tick: &Tick<Tz>, tz: &Tz) -> Option<Tick<Tz>> {
+        let _ = tick;
+        self.next_tick(tz)
+    }
 }
 
 #[cfg(test)]

@@ -167,7 +167,10 @@ where
                     );
                     self.delay = None;
 
-                    self.next_tick = self.config.schedule.next_tick(&tz);
+                    // Advance from the tick that fired, not from now: the delay runs on a
+                    // monotonic clock and can fire just before the wall clock reaches `fired`,
+                    // and a next tick computed from now would then be `fired` again.
+                    self.next_tick = self.config.schedule.next_tick_after(&fired, &tz);
 
                     tracing::trace!(
                         next_tick = ?self.next_tick,
@@ -235,5 +238,54 @@ where
             delay: None,
             next_tick: None,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::{Duration, SystemTime};
+
+    use futures_util::StreamExt;
+
+    use super::*;
+
+    /// Stands in for a schedule whose `next_tick` is asked just before the wall clock
+    /// reaches the tick that has just fired, as happens when the delay fires early: every
+    /// call after the first returns that same tick again.
+    struct EarlyFire {
+        first: Option<u64>,
+    }
+
+    impl Schedule<Utc> for EarlyFire {
+        fn next_tick(&mut self, _: &Utc) -> Option<Tick<Utc>> {
+            let now = SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+            Some(Tick::new(*self.first.get_or_insert(now + 2)))
+        }
+
+        fn next_tick_after(&mut self, tick: &Tick<Utc>, _: &Utc) -> Option<Tick<Utc>> {
+            Some(Tick::new(tick.get_timestamp() + 1))
+        }
+    }
+
+    #[tokio::test]
+    async fn an_early_fire_does_not_hand_back_the_same_tick() {
+        let stream = CronScheduler::new(EarlyFire { first: None }).into_stream();
+        let ticks: Vec<_> = tokio::time::timeout(Duration::from_secs(5), stream.take(2).collect())
+            .await
+            .expect("the scheduler did not produce two ticks in time");
+
+        let first = ticks[0].as_ref().expect("first tick").get_timestamp();
+        let second = ticks[1]
+            .as_ref()
+            .expect("the tick after a fire must not be out of range")
+            .get_timestamp();
+        assert_eq!(
+            second,
+            first + 1,
+            "the scheduler did not advance past the fired tick"
+        );
     }
 }

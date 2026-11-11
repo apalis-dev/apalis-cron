@@ -102,6 +102,18 @@ impl<Tz: chrono::TimeZone> Schedule<Tz> for EnglishRoutine {
             .map(|s| s.timestamp() as _)
             .map(Tick::new)
     }
+
+    fn next_tick_after(&mut self, tick: &Tick<Tz>, timezone: &Tz) -> Option<Tick<Tz>> {
+        // `after` is exclusive: the search starts one second past `tick`.
+        let after = timezone
+            .timestamp_opt(i64::try_from(tick.get_timestamp()).ok()?, 0)
+            .single()?;
+        self.schedule
+            .after(&after)
+            .next()
+            .map(|s| s.timestamp() as _)
+            .map(Tick::new)
+    }
 }
 
 #[cfg(test)]
