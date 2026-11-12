@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix: workaround sqlx sqlite RUSTSEC-2026-0459 ([#79](https://github.com/apalis-dev/apalis-cron/pull/79))
 - chore: add auto-release and auto-changelog scripts ([#78](https://github.com/apalis-dev/apalis-cron/pull/78))
 
 ## [1.0.0] - 2026-10-12

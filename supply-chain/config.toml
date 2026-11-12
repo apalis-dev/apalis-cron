@@ -377,11 +377,11 @@ version = "1.0.19"
 criteria = "safe-to-run"
 
 [[exemptions.jiff]]
-version = "0.2.42"
+version = "0.2.43"
 criteria = "safe-to-deploy"
 
 [[exemptions.jiff-core]]
-version = "0.1.4"
+version = "0.1.5"
 criteria = "safe-to-deploy"
 
 [[exemptions.jiff-cron]]
@@ -389,7 +389,7 @@ version = "0.3.0"
 criteria = "safe-to-deploy"
 
 [[exemptions.jiff-static]]
-version = "0.2.42"
+version = "0.2.43"
 criteria = "safe-to-deploy"
 
 [[exemptions.jiff-tzdb]]
@@ -413,7 +413,7 @@ version = "0.2.191"
 criteria = "safe-to-deploy"
 
 [[exemptions.libsqlite3-sys]]
-version = "0.37.0"
+version = "0.30.1"
 criteria = "safe-to-run"
 
 [[exemptions.linux-raw-sys]]
@@ -938,6 +938,10 @@ criteria = "safe-to-deploy"
 
 [[exemptions.windows-sys]]
 version = "0.52.0"
+criteria = "safe-to-run"
+
+[[exemptions.windows-sys]]
+version = "0.59.0"
 criteria = "safe-to-run"
 
 [[exemptions.windows-sys]]
