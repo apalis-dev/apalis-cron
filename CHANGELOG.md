@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- *deps(deps)*: bump sqlx from 0.9.0 to 0.9.1 ([#85](https://github.com/apalis-dev/apalis-cron/pull/85))
 ## [1.1.0](https://github.com/apalis-dev/apalis-cron/releases/tag/v1.1.0)
 
 - fix: workaround sqlx sqlite RUSTSEC-2026-0459 ([#79](https://github.com/apalis-dev/apalis-cron/pull/79))
