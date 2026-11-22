@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0](https://github.com/apalis-dev/apalis-cron/releases/tag/v1.2.0)
+
 - *deps(deps)*: bump apalis-sqlite from 1.0.0 to 1.1.0 ([#83](https://github.com/apalis-dev/apalis-cron/pull/83))
 ## [1.1.0](https://github.com/apalis-dev/apalis-cron/releases/tag/v1.1.0)
 
