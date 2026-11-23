@@ -1,8 +1,5 @@
 [advisories]
-ignore = [
-    # TODO(geofmureithi): track https://github.com/launchbadge/sqlx/issues/4082
-    "RUSTSEC-2023-0071",
-]
+ignore = []
 
 [output]
 quiet = false
